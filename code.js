@@ -28,6 +28,7 @@ var verbFinish = 'finish';
 // 休憩時間デオフォルト値
 var restDafault = '1:00:00';
 
+// endpoint
 function doGet(e) {
   Logger.log('doGet called');
   
@@ -37,6 +38,7 @@ function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify(resp)).setMimeType(ContentService.MimeType.JSON);
 }
 
+// endpoint
 function doPost(e) {
   Logger.log('doPost called');
   
