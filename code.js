@@ -24,16 +24,18 @@ var noteR1C1 = columnNote - columnWorkTime;
 // 動詞定義
 var verbStart = "start";
 var verbFinish = "finish";
+var verbRest = "rest";
 
-// 休憩時間デオフォルト値
-var restDafault = "1:00:00";
+// 勤労定義
+var nohana = "nohana";
+var kyotaki = "kyotaki";
 
 // endpoint
 function doGet(e) {
   Logger.log("doGet called");
 
   var resp = {
-    status: "ok"
+    status: "ok",
   };
   return ContentService.createTextOutput(JSON.stringify(resp)).setMimeType(
     ContentService.MimeType.JSON
@@ -70,7 +72,12 @@ function doPost(e) {
     Logger.log("note: " + note);
   }
 
-  var date = getDate(time);
+  var date;
+  if (verb === verbRest) {
+    date = `${time}:00:00`;
+  } else {
+    date = getDate(time);
+  }
   var sheet = getMonthlySheet(work, date);
   write(sheet, date, work, verb, note);
 
@@ -79,16 +86,20 @@ function doPost(e) {
     sheet.getParent().getUrl(),
     sheet.getSheetId()
   );
-  var resp = Utilities.formatString(
+  var result = Utilities.formatString(
     "saved you %s %s at %s.\n%s",
     verb,
     work,
     date,
     url
   );
+  var resp = {
+    response_type: "in_channel",
+    text: JSON.stringify(result),
+  };
 
-  return ContentService.createTextOutput(resp).setMimeType(
-    ContentService.MimeType.TEXT
+  return ContentService.createTextOutput(JSON.stringify(resp)).setMimeType(
+    ContentService.MimeType.JSON
   );
 }
 
@@ -243,8 +254,9 @@ function write(sheet, date, work, verb, note) {
       break;
     case verbFinish:
       column = columnFinish;
-      // 休憩部分も
-      sheet.getRange(row, columnRest).setValue(restDafault);
+      break;
+    case verbRest:
+      column = columnRest;
       break;
     default:
       throw new Error(Utilities.formatString("undefined verb: %s", verb));
